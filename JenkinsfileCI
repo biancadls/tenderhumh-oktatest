@@ -1,0 +1,61 @@
+@Library('FXF_CI_Libraries') _
+import com.fedex.fxf.*
+
+/**
+ * FXF Jenkins CI Shared Library - Standard Pipeline
+ * @see https://gitlab.prod.fedex.com/APP3531481/jenkins_shared_library/wikis/home
+ */
+StandardPipeline {
+    // Use a single string with comma separated list of one or more email addresses.
+    // email_on_result = 'SEFS-FXF-DeploymentNotify@corp.ds.fedex.com'
+
+    // Project EAI
+    EAI = '3537582'
+    // appName = 'fxf-tender-hu-migration-helper'
+
+    // Project Branch Strategy
+    branchStrategy = new BranchStrategy().fxfTrunkBasedDevelopmentStrategy
+
+    // Project Build Settings
+    build_properties = [autoVersionOnDemand: true, autoVersion: false]
+
+    // SonarQube Code Inspection Settings
+    sonarqube = [autoBranchAnalysis: true, ensureConfig: true, developerAdminAccess: true, enforceQualityGate: true, rely: [enabled: true]]
+
+    // Scan dependencies for security and license issues using Nexus IQ Server.
+    nexusIQ = [iqApplication: "3537582-fxf-tenderhandlingunit-mh"]
+
+// Id of credentials configured in Jenkins for uploading artifact(s) to Nexus.
+    nexusCredentials = [id: 'Id_3537582_nexus']
+
+//    scmTagging = true
+
+    fortify_id= "3537582_FXF-TenderHandlingUnit-MH"
+//    pcf = [
+//            NEXUS_REPO : 'snapshot',
+//            NEXUS_GROUP: 'eai3537582.com.fedex.sefs',
+//            NexusId    : '3537582_nexus',
+//            Package    : 'jar',
+//            pamId      : '3537582_pam',
+//            relyDynamic: [enabled : false, envUrlPath: '/actuator/env'],
+//            url        : 'https://api.sys.wtcdev3.paas.fedex.com, https://api.sys.clwdev3.paas.fedex.com, https://api.sys.cledev1-az3.paas.fedex.com',
+//            space      : "release",
+//            script     : """#!/bin/bash
+//        //cf push fxf-tender-hu-migration-helper-rel1 -p target/fxf-tender-hu-migration-helper*.jar
+//       """
+//    ]
+
+    postDeployDownstreamJobs = [
+            [
+                    remotePathUrl: 'jenkins://d56cc620ce3a3dab6ba4a21f5bf7262b/ARTs/SEFS-VisDom-Processor-3530949/SEFS_E2E_TestScripts',
+                    mode: [
+                            $class: 'AwaitResult',
+                            timeout: [timeoutStr: '2h'],
+                            whenFailure: [$class: 'StopAsFailure'],
+                            whenTimeout: [$class: 'StopAsFailure'],
+                            whenUnstable: [$class: 'ContinueAsUnstable']
+                    ]
+            ]
+    ]
+
+}

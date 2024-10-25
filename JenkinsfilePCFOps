@@ -1,0 +1,50 @@
+@Library('FXF_CD_Libraries') _
+
+/**
+ * FXF Jenkins CD Shared Library - Standard PCF Ops Pipeline
+ * @see https://gitlab.prod.fedex.com/APP3531481/jenkins_shared_library/wikis/CD/PCF/Standard-PCF-Ops-Pipeline
+ */
+StandardPcfOpsPipeline {
+    appNames = ['fxf-tender-hu-migration-helper', 'tender-hu-mh-config-server',
+                'fxf-tender-hu-mh-discovery-server-peer1', 'fxf-tender-hu-mh-discovery-server-peer2']
+
+    pamId = '3537582_pam'
+    EAI = "3537582"
+
+    // Pipeline configuration closure.
+    def approvers = [
+            [empId: '752379', name: 'Douglas Clinger'],
+            [empId: '752306', name: 'Matt Green'],
+            [empId: '752472', name: 'Steve Rosamond'],
+            [empId: '396997', name: 'Greg Tabor'],
+            [empId: '499855', name: 'Leo D\'Souza']
+    ]
+    approvals = [
+            production: [approvers: approvers, timeoutMinutes: 20],
+    ]
+
+    approvalExemptActions = ['info', 'refresh', 'start', 'setLogLevel', 'rollingRestart', 'cancelDeployment']
+
+        customActions = [
+            'rollingRestart': {
+                def actionConfig = [pamId: getSecretText('3537582_pam'), url: env.PCF_API_URL, space: params.SPACE, appName: env.PCF_APP_NAME, foundation: env.PCF_FOUNDATION]
+                pcfLogin(actionConfig)
+                pcfCli(actionConfig, "cf restart ${env.PCF_APP_NAME}")
+            },
+            'cancelDeployment': {
+                def actionConfig = [pamId: getSecretText('3537582_pam'), url: env.PCF_API_URL, space: params.SPACE, appName: env.PCF_APP_NAME, foundation: env.PCF_FOUNDATION]
+                pcfLogin(actionConfig)
+                pcfCli(actionConfig, "cf cancel-deployment ${env.PCF_APP_NAME}")
+            }
+    ]
+
+
+    spaces = [
+            development: [subspaces: ['dev1', 'dev2', 'rel1'], regions: ['clwdev', 'cledev1-az'], availabilityZones: [1]],
+            release    : [subspaces: ['rel1', 'rel-wtc', 'rel-edc', 'rel-clw', 'rel-cle'], regions: ['wtcdev', 'clwdev', 'cledev1-az'], availabilityZones: [1,2,3]],
+            staging    : [subspaces: [], regions: ['wtcbo', 'clwcc4-az', 'clecc1-az'], availabilityZones: [1,2,3,7]],
+            production : [subspaces: [], regions: ['wtcbo', 'clwcc4-az', 'clecc1-az'], availabilityZones: [1,2,3,7]]
+    ]
+
+
+}

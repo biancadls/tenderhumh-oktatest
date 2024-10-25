@@ -1,0 +1,172 @@
+@Library('FXF_CD_Libraries') _
+
+/**
+ * FXF Jenkins CD Shared Library - Standard Deploy Pipeline
+ * @see https://gitlab.prod.fedex.com/APP3531481/jenkins_shared_library/wikis/CD/PCF/Standard-Deploy-Pipeline
+ */
+
+def $SPACE = SPACE
+def $SUBSPACE = SUBSPACE
+
+StandardDeployPipeline {
+
+    // Pipeline configuration closure.
+    pcf = [
+            CF_APP_NAME: 'fxf-tender-hu-migration-helper',
+            EAI        : '3537582',
+            NEXUS_GROUP: 'eai3537582.com.fedex.sefs',
+            groupId    : 'eai3537582.com.fedex.sefs',
+            artifactId : 'fxf-tender-hu-migration-helper',
+            NexusId    : 'Id_3537582_nexus',
+            nexusRepos : ['release', 'snapshot', 'SEFS-6270-releases'],
+            Package    : 'jar',
+            pamId      : '3537582_pam',
+            relyDynamic: [enabled: false, envUrlPath: '/actuator/env'],
+            spaces     : ['development', 'release', 'staging', 'production'],
+            subspaces  : [
+                    'dev1', 'dev2', 'rel1-wtc', 'rel1-edc', 
+                    'rel1-cledev1-az1', 'rel1-cledev1-az2', 'rel1-cledev1-az3',
+                    'rel-edc', 'rel-wtc', 'rel-cle', 'rel-clw',
+                    'prod-edc', 'prod-wtc', 'prod-cle', 'prod-clw'
+            ],
+            url        : 'https://api.sys.wtcdev3.paas.fedex.com',
+            versionsRef: 'nexus',
+            deployStrategy: 'rolling',
+    ]
+
+    def approvers = [
+            [empId: '752379', name: 'Douglas Clinger'],
+            [empId: '752306', name: 'Matt Green'],
+            [empId: '752472', name: 'Steve Rosamond'],
+            [empId: '396997', name: 'Greg Tabor'],
+            [empId: '499855', name: 'Leo D\'Souza']
+    ]
+    approvals = [
+            production: [approvers: approvers, timeoutMinutes: 20],
+            'production_prod-edc': [approvers: approvers, timeoutMinutes: 20],
+            'production_prod-wtc': [approvers: approvers, timeoutMinutes: 20],
+            'production_prod-cle': [approvers: approvers, timeoutMinutes: 20],
+            'production_prod-clw': [approvers: approvers, timeoutMinutes: 20],
+            staging   : [approvers: approvers, timeoutMinutes: 20]
+    ]
+
+    office365 = [
+            approvalWebhookUrl: 'https://myfedex.webhook.office.com/webhookb2/2d15921f-5999-4762-8c80-7e34375f3e5a@b945c813-dce6-41f8-8457-5a12c2fe15bf/IncomingWebhook/325f72b625114453adddb801d6c486c9/63951626-0471-496a-9960-d451b7256576'
+    ]
+
+    switch ($SPACE) {
+        case 'development':
+            configUrl = 'https://fxf-sefs-config-server-development.app.wtcdev2.paas.fedex.com'
+            if ($SUBSPACE == 'dev1') {
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-"+$SUBSPACE
+                pcf.instances = 1
+                springProfilesActive = 'dev1, cloud'
+                pcf.url = 'https://api.sys.clwdev1.paas.fedex.com'
+            } else if ($SUBSPACE == 'dev2') {
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-"+$SUBSPACE
+                pcf.instances = 1
+                springProfilesActive = 'dev2, cloud'
+                pcf.url = 'https://api.sys.clwdev1.paas.fedex.com'
+            } else if ($SUBSPACE == 'rel1-cledev1-az1') {
+                pcf.instances = 2
+                springProfilesActive = 'rel1-cle, cloud'
+                pcf.url = 'https://api.sys.cledev1-az1.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-rel1"
+                $SUBSPACE='rel1'
+            } else if ($SUBSPACE == 'rel1-cledev1-az2') {
+                pcf.instances = 2
+                springProfilesActive = 'rel1-cle, cloud'
+                pcf.url = 'https://api.sys.cledev1-az2.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-rel1"
+                $SUBSPACE='rel1'
+            } else if ($SUBSPACE == 'rel1-cledev1-az3') {
+                pcf.instances = 2
+                springProfilesActive = 'rel1-cle, cloud'
+                pcf.url = 'https://api.sys.cledev1-az3.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-rel1"
+                $SUBSPACE='rel1'
+            } 
+            break
+        case 'release':
+            configUrl = 'https://fxf-sefs-config-server-development.app.wtcdev2.paas.fedex.com'
+            if ($SUBSPACE == 'rel1-wtc') {
+                pcf.instances = 2
+                springProfilesActive = 'rel1-wtc, cloud'
+                pcf.url = 'https://api.sys.wtcdev3.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-rel1"
+                $SUBSPACE='rel1'
+            } else if ($SUBSPACE == 'rel1-edc') {
+                pcf.instances = 2
+                springProfilesActive = 'rel1-edc, cloud'
+                pcf.url = 'https://api.sys.clwdev3.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-rel1"
+                $SUBSPACE='rel1'
+            } else if ($SUBSPACE == 'rel1-clw') {
+                pcf.instances = 2
+                springProfilesActive = 'rel1-clw, cloud'
+                pcf.url = 'https://api.sys.clwdev3.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-rel1"
+                $SUBSPACE='rel1'
+            } else if ($SUBSPACE == 'rel-wtc') {
+                pcf.instances = 2
+                springProfilesActive = 'rel-wtc, cloud'
+                pcf.url = 'https://api.sys.wtcdev3.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-"+$SUBSPACE
+            } else if ($SUBSPACE == 'rel-edc') {
+                pcf.instances = 2
+                springProfilesActive = 'rel-edc, cloud'
+                pcf.url = 'https://api.sys.clwdev3.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-"+$SUBSPACE
+            } else if ($SUBSPACE == 'rel-cle') {
+                pcf.instances = 2
+                springProfilesActive = 'rel-cle, cloud'
+                pcf.url = 'https://api.sys.cledev1-az1.paas.fedex.com, https://api.sys.cledev1-az2.paas.fedex.com, https://api.sys.cledev1-az3.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-"+$SUBSPACE
+            } else if ($SUBSPACE == 'rel-clw') {
+                pcf.instances = 2
+                springProfilesActive = 'rel-clw, cloud'
+                pcf.url = 'https://api.sys.clwdev3.paas.fedex.com'
+                pcf.CF_APP_NAME = "${pcf.CF_APP_NAME}-"+$SUBSPACE
+            }
+
+            break
+        case 'staging':
+            configUrl = 'https://fxf-sefs-config-server-prod.app.edccf1.paas.fedex.com'
+            pcf.instances = 1
+            springProfilesActive = 'staging, cloud'
+            pcf.url = 'https://api.sys.wtcbo7.paas.fedex.com'
+            break
+        case 'production':
+            configUrl = 'https://fxf-sefs-config-server-prod.app.edccf1.paas.fedex.com'
+            if ($SUBSPACE == 'prod-wtc') {
+                pcf.instances = 4
+                springProfilesActive = 'prod-wtc, cloud'
+                pcf.url = 'https://api.sys.wtcbo7.paas.fedex.com'
+            } else if ($SUBSPACE == 'prod-edc') {
+                pcf.instances = 4
+                springProfilesActive = 'prod-edc, cloud'
+                pcf.url = 'https://api.sys.edcbo7.paas.fedex.com'
+            } else if ($SUBSPACE == 'prod-clw') {
+                pcf.instances = 4
+                springProfilesActive = 'prod-clw, cloud'
+                pcf.url = 'https://api.sys.clwcc4-az1.paas.fedex.com, https://api.sys.clwcc4-az2.paas.fedex.com, https://api.sys.clwcc4-az3.paas.fedex.com'
+            } else if ($SUBSPACE == 'prod-cle') {
+                pcf.instances = 4
+                springProfilesActive = 'prod-cle, cloud'
+                pcf.url = 'https://api.sys.clecc1-az1.paas.fedex.com, https://api.sys.clecc1-az2.paas.fedex.com, https://api.sys.clecc1-az3.paas.fedex.com'
+            }
+            break
+    }
+
+    pcf.props = [
+            'SPRING_PROFILES_ACTIVE': springProfilesActive,
+            'CONFIG_URI': configUrl,
+    ]
+
+    pcf.script = """#!/bin/bash
+                cf set-env ${pcf.CF_APP_NAME} CONFIG_URI '${configUrl}'
+                cf set-env ${pcf.CF_APP_NAME} SPRING_PROFILES_ACTIVE '${springProfilesActive}'
+                cf push ${pcf.CF_APP_NAME} -p fxf-tender-hu-migration-helper*.jar --strategy rolling --no-wait
+            """
+
+}

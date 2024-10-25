@@ -1,0 +1,99 @@
+# This file provides the configuration necessary for releasing an
+# application taking full advantage of the Autobahn.
+
+# Currently we require the release version here in this file
+releaseVersion: "1.1.7-SNAPSHOT"
+
+# config repository
+config-server-url: "https://dev1-tender-hu-mh-config-server.app.clwdev1.paas.fedex.com"
+config-release-name: "Habanero"
+config-app-group: 'fxf-tender-hu-migration-helper'
+deploy-app-names: 'fxf-tender-hu-migration-helper'
+config-repo: "https://gitlab.prod.fedex.com/APP3537582/fxf-tenderhandlingmh-config-repo.git"
+
+#config-repo: "https://gitlab.prod.fedex.com/APP3537582/fxf-tenderhandlingmh-config-repo.git"
+
+msTeamsWebhookUri: "https://outlook.office.com/webhook/9f2bd5a1-809f-4fbb-afc6-f37377e61cb0@b945c813-dce6-41f8-8457-5a12c2fe15bf/IncomingWebhook/42995743086f4ebf9185c3c56ee561a0/22e82a6b-9388-455e-926e-e72cf565ad9b"
+
+# The Jenkins job that will build the RC candidate.
+jenkinsJob: "3537582-fxf-tender-hu-migration-helper/job/fxf-tender-hu-migration-helper"
+jenkinsToken: "SelfServiceTrigger123"
+jenkinsUrl: "https://jenkins-shipment-web.fedex.com:8443/jenkins/"
+jenkinsConfig: "JenkinsShipment"
+jenkinsTestArtifacts: "target/surefire-reports.zip"
+jenkins.junitPath: '**/surefire-reports/*.xml'
+
+# Nexus releases
+nexusGroupId: "com.fedex.sefs.fxf"
+nexusArtifactId: "fxf-tender-hu-migration-helper"
+
+# SonarQube project
+sonarProject: 'Fxf-tender-hu-migration-helper'
+
+#Fortify Scanner inputs
+fortifyProjectID: "0000000"
+fortifyBaseUrl: "https://wiessc.web.fedex.com:8888"
+
+# If this is not set, then ARO tool will use the mergedBy variable
+changeCoordinator: "00000"
+
+impactedOpco: "FedEx Services"
+
+reason: "New"
+configurationItem: "SEFS-CORE"
+assignmentGroup: "FXS_SHIPMENTEFS"
+
+requestDescription: "Continuing deployment for fxf-tender-hu-migration-helper"
+requestShortDescription: "AWU# UAT-Verify | Feature# PDSM-Integration | Description# fxf-tender-hu-migration-helper"
+taskShortDescription: "AWU# UAT-Verify | Feature# PDSM-Integration | Description# fxf-tender-hu-migration-helper"
+
+# justification should include business justification, followed by risk if not done
+justification: |-
+
+  Additional functionality is necessary for people to serve themselves. Standard justification Q/As required by our organization follow:
+
+  If this change does not require a Go/No Go, please explain why.
+  N/A - GNG already approved
+
+  Briefly describe the work that will take place.
+  Automated deployment to PCF of CI/CD self-service app
+
+  What is the actual time that the load is expected to begin and end?
+  ASAP - should take about 10 minutes
+
+
+# You need test, implementation, and backout plans. backoutDur must be one of:
+# Low = < 30 mins, Med = 30-60 mins, High = > 60 mins
+testPlan: "Run all automated tests via Jenkins RC build"
+implementationPlan: "Automated deployment to PCF"
+backoutDur: "Low = < 30 mins"
+
+# Sub pipeline executions
+qaDeploymentPipeline: "qa.deployment.pipeline"
+autoTestingPipeline: "automation.testing.pipeline"
+prodDeploymentPipeline: "prod.deployment.pipeline"
+smokeTestPipeline: "smoke.tests.pipeline"
+
+
+
+sourceRepository:
+  #url: "git@gitlab.prod.fedex.com:APP3537582/fxf-tenderhandlingmh.git"
+  #creds_id: "gitlab-user-for-master"
+  url: "git@gitlab.prod.fedex.com:APP3537582/fxf-tenderhandlingmh.git"
+  creds_id: "FXS_app3537582_SRC"
+
+nexusRepositories:
+- id: "snapshots"
+  target: "nexusSnapshotRepo"
+  url: "https://nexus.prod.cloud.fedex.com:8443/nexus/repository/SEFS-6270-snapshots"
+  creds_id: "sefs-nexus-snapshots"
+- id: "prereleases"
+  target: "nexusPreReleaseRepo"
+  url: "https://nexus.prod.cloud.fedex.com:8443/nexus/repository/SEFS-6270-releases"
+  creds_id: "sefs-nexus-prereleases"
+- id: "staging"
+  target: "nexusStagingRepo"
+  url: "https://nexus.prod.cloud.fedex.com:8443/nexus/repository/staging"
+- id: "releases"
+  target: 'nexusReleaseRepo'
+  url: "https://nexus.prod.cloud.fedex.com:8443/nexus/repository/releases"

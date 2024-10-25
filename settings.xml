@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <!-- This file goes in the root of a maven project that corresponds with a Jenkins build job. -->
+
+    <pluginGroups>
+        <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
+    </pluginGroups>
+
+    <proxies>
+        <proxy>
+            <id>http</id>
+            <active>true</active>
+            <protocol>http</protocol>
+            <host>east.proxy.fedex.com</host>
+            <port>3128</port>
+        </proxy>
+        <proxy>
+            <id>https</id>
+            <active>true</active>
+            <protocol>https</protocol>
+            <host>east.proxy.fedex.com</host>
+            <port>3128</port>
+        </proxy>
+    </proxies>
+
+    <servers>
+        <server>
+            <id>snapshot</id>
+            <username>${env.NexusUser}</username>
+            <password>${env.NexusPassword}</password>
+        </server>
+        <server>
+            <id>release</id>
+            <username>${env.NexusUser}</username>
+            <password>${env.NexusPassword}</password>
+        </server>
+    </servers>
+
+    <mirrors>
+        <mirror>
+            <id>fedex-central-proxy</id>
+            <name>FedEx Central Proxy</name>
+            <url>https://nexus.prod.cloud.fedex.com:8443/nexus/content/repositories/central/</url>
+            <mirrorOf>central</mirrorOf>
+        </mirror>
+
+        <mirror>
+            <id>nexus</id>
+            <mirrorOf>central</mirrorOf>
+            <url>https://nexus.prod.cloud.fedex.com:8443/nexus/repository/maven-central/</url>
+        </mirror>
+
+        <mirror>
+            <id>nexus</id>
+            <mirrorOf>snapshots</mirrorOf>
+            <url>https://nexus.prod.cloud.fedex.com:8443/nexus/repository/snapshot/</url>
+        </mirror>
+
+        <mirror>
+            <id>nexus</id>
+            <mirrorOf>releases</mirrorOf>
+            <url>https://nexus.prod.cloud.fedex.com:8443/nexus/repository/release/</url>
+        </mirror>
+    </mirrors>
+
+</settings>
